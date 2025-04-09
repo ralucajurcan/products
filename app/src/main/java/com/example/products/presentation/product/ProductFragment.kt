@@ -10,13 +10,16 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.Navigation
+import androidx.navigation.navGraphViewModels
 import com.bumptech.glide.Glide
 import com.example.products.R
 import com.example.products.common.model.Product
 import com.example.products.databinding.FragmentProductBinding
+import com.example.products.presentation.shared.SharedViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -25,6 +28,9 @@ class ProductFragment : Fragment(R.layout.fragment_product) {
     private val binding get() = _binding!!
 
     private val viewModel: ProductViewModel by viewModels()
+    private val sharedViewModel: SharedViewModel by activityViewModels()
+    private val navGraphViewModel: ProductsNavGraphViewModel by navGraphViewModels(R.id.products_graph)
+
     private var currentProduct = Product("", "", 0L, 0L, 0L, "")
 
     override fun onCreateView(
@@ -38,8 +44,8 @@ class ProductFragment : Fragment(R.layout.fragment_product) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val productId = ProductFragmentArgs.fromBundle(requireArguments()).productId
-        if (productId != 0L) {
+        // as an example - usage of the activity VM
+        sharedViewModel.selectedProductId.observe(viewLifecycleOwner) { productId ->
             viewModel.getProduct(productId).observe(viewLifecycleOwner) { product ->
                 product?.let {
                     currentProduct = it
@@ -66,6 +72,9 @@ class ProductFragment : Fragment(R.layout.fragment_product) {
                     imageUrl = binding.imageUrlView.text.toString()
                 )
                 viewModel.saveProduct(currentProduct)
+
+                // usage of the nav graph VM
+                navGraphViewModel.addViewedProduct(currentProduct.title)
             } else {
                 Navigation.findNavController(it).popBackStack()
             }

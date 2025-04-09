@@ -5,11 +5,13 @@ import android.view.LayoutInflater
 import androidx.fragment.app.Fragment
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.products.databinding.FragmentListBinding
 import com.example.products.presentation.product.ProductViewModel
+import com.example.products.presentation.shared.SharedViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -19,11 +21,16 @@ class ListFragment : Fragment() {
     private var _binding: FragmentListBinding? = null
     private val binding get() = _binding!!
 
-    // gives you an instance of ProductViewModel scoped to this Fragment
+    // gives an instance of ProductViewModel scoped to this Fragment
     private val viewModel: ProductViewModel by viewModels()
+
+    // gives an instance of SharedViewModel scoped to the activity
+    private val sharedViewModel: SharedViewModel by activityViewModels()
 
     // should navigate to product fragment
     private val productsAdapter = ProductsAdapter(emptyList()) { product ->
+        // first store the product id in the shared view model, which can be observed by any other fragment in the activity
+        sharedViewModel.selectProduct(product.id)
         val action = ListFragmentDirections.actionGoToProduct(product.id)
         findNavController().navigate(action)
     }

@@ -12,6 +12,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/*
+    Fragment ViewModel
+*/
+
 @HiltViewModel // VM that receives dependencies via constructor injection
 class ProductViewModel @Inject constructor(
     private val useCases: UseCases,
@@ -30,6 +34,7 @@ class ProductViewModel @Inject constructor(
 
     // called auto when the VM is created; loads existing products immediately
     init {
+        Log.d("ProductViewModel", "Fragment ViewModel init ...")
         loadProducts()
     }
 
@@ -85,6 +90,8 @@ class ProductViewModel @Inject constructor(
 
                 // get the data from db
                 loadProducts()
+
+                Log.d("ProductViewModel", "Get products from API, save them to DB and load them")
             } catch (e: Exception) {
                 Log.e("ProductViewModel", "Sync products list from server failed", e)
             }
