@@ -28,7 +28,7 @@ class ProductViewModel @Inject constructor(
     // if true, the Fragment might show a Toast or navigate away
     val saved = MutableLiveData<Boolean>()
 
-    // called auto when the VM is created; loads existing notes immediately
+    // called auto when the VM is created; loads existing products immediately
     init {
         loadProducts()
     }
@@ -43,7 +43,7 @@ class ProductViewModel @Inject constructor(
         }
     }
 
-    // saves the product and notifies the UI; then refreshes the note list
+    // saves the product and notifies the UI; then refreshes the products list
     fun saveProduct(product: Product) {
         viewModelScope.launch {
             useCases.addProduct(product)

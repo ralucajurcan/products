@@ -3,7 +3,7 @@ package com.example.products.framework.mapper
 import com.example.products.common.model.Product
 import com.example.products.framework.db.ProductEntity
 
-fun ProductEntity.toNote(): Product = Product(
+fun ProductEntity.toProduct(): Product = Product(
     id = this.id,
     title = this.title,
     description = this.description,
