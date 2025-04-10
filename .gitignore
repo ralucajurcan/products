@@ -1,15 +1,38 @@
-*.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+# === Gradle ===
+.gradle/
+**/build/
+.cxx/
+.externalNativeBuild/
 local.properties
+
+# Gradle Wrapper - files to keep!
+!gradle/wrapper/gradle-wrapper.properties
+!gradle/wrapper/gradle-wrapper.jar
+
+#Gradle caches
+gradle/wrapper/.tmp/
+gradle/wrapper/android/
+gradle/wrapper/caches/
+gradle/wrapper/daemon/
+gradle/wrapper/jdks/
+gradle/wrapper/kotlin-profile/
+gradle/wrapper/native/
+
+# === IntelliJ / Android Studio ===
+*.iml
+.idea/
+.idea/caches/
+.idea/libraries/
+.idea/modules.xml
+.idea/workspace.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+.idea/deploymentTargetSelector.xml
+
+# === Android-specific ===
+captures/
+*.apk
+*.ap_
+
+# === Misc ===
+.DS_Store
