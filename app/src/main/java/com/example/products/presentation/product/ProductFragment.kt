@@ -27,6 +27,7 @@ class ProductFragment : Fragment(R.layout.fragment_product) {
     private var _binding: FragmentProductBinding? = null
     private val binding get() = _binding!!
 
+    // delegated properties
     private val viewModel: ProductViewModel by viewModels()
     private val sharedViewModel: SharedViewModel by activityViewModels()
     private val navGraphViewModel: ProductsNavGraphViewModel by navGraphViewModels(R.id.products_graph)
@@ -61,23 +62,19 @@ class ProductFragment : Fragment(R.layout.fragment_product) {
         }
 
         binding.checkButton.setOnClickListener {
-            if (binding.titleView.text.isNotBlank() || binding.contentView.text.isNotBlank()) {
-                val time = System.currentTimeMillis()
+            val time = System.currentTimeMillis()
 
-                currentProduct = currentProduct.copy(
-                    title = binding.titleView.text.toString(),
-                    description = binding.contentView.text.toString(),
-                    updateTime = time,
-                    creationTime = if (currentProduct.id == 0L) time else currentProduct.creationTime,
-                    imageUrl = binding.imageUrlView.text.toString()
-                )
-                viewModel.saveProduct(currentProduct)
+            currentProduct = currentProduct.copy(
+                title = binding.titleView.text.toString(),
+                description = binding.contentView.text.toString(),
+                updateTime = time,
+                creationTime = if (currentProduct.id == 0L) time else currentProduct.creationTime,
+                imageUrl = binding.imageUrlView.text.toString()
+            )
+            viewModel.saveProduct(currentProduct)
 
-                // usage of the nav graph VM
-                navGraphViewModel.addViewedProduct(currentProduct.title)
-            } else {
-                Navigation.findNavController(it).popBackStack()
-            }
+            // usage of the nav graph VM
+            navGraphViewModel.addViewedProduct(currentProduct.title)
         }
 
         binding.imageUrlView.addTextChangedListener(object : TextWatcher {
@@ -94,24 +91,31 @@ class ProductFragment : Fragment(R.layout.fragment_product) {
         })
 
         observeViewModel()
+
+        viewModel.validationError.observe(viewLifecycleOwner) { error ->
+            error?.let {
+                Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun observeViewModel() {
         viewModel.saved.observe(viewLifecycleOwner, Observer {
             if (it) {
-                Toast.makeText(context, "Done!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Done!", Toast.LENGTH_SHORT).show()
                 binding.titleView.clearFocus()
                 binding.contentView.clearFocus()
                 hideKeyboard()
                 Navigation.findNavController(binding.titleView).popBackStack()
             } else {
-                Toast.makeText(context, "Something went wrong", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Something went wrong", Toast.LENGTH_SHORT).show()
             }
         })
     }
 
     private fun hideKeyboard() {
-        val inputMethodManager = requireActivity().getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+        val inputMethodManager =
+            requireActivity().getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
         val currentFocusView = requireActivity().currentFocus ?: View(requireContext())
         currentFocusView.clearFocus()
         inputMethodManager.hideSoftInputFromWindow(currentFocusView.windowToken, 0)

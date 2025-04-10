@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.products.common.model.Product
 import com.example.products.core.usecase.UseCases
+import com.example.products.core.validation.ProductValidator
 import com.example.products.framework.remote.ApiService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -25,12 +26,17 @@ class ProductViewModel @Inject constructor(
     // data holder that the UI can observe and holds a list of products - don't let the UI change the data directly
     private val _products = MutableLiveData<List<Product>>()
 
+    private val _validationError = MutableLiveData<String?>()
+
     // getter
     val products: LiveData<List<Product>> get() = _products
+
+    val validationError: LiveData<String?> get() = _validationError
 
     // flag that tells the UI a product has been successfully saved
     // if true, the Fragment might show a Toast or navigate away
     val saved = MutableLiveData<Boolean>()
+
 
     // called auto when the VM is created; loads existing products immediately
     init {
@@ -50,9 +56,18 @@ class ProductViewModel @Inject constructor(
 
     // saves the product and notifies the UI; then refreshes the products list
     fun saveProduct(product: Product) {
+        val errorMessage = validateProduct(product)
+
+        if (errorMessage != null) {
+            _validationError.postValue(errorMessage)
+            return
+        }
+
         viewModelScope.launch {
             useCases.addProduct(product)
             saved.postValue(true)
+            // clear errors
+            _validationError.postValue(null)
             loadProducts()
         }
     }
@@ -96,7 +111,15 @@ class ProductViewModel @Inject constructor(
                 Log.e("ProductViewModel", "Sync products list from server failed", e)
             }
         }
+    }
 
+    private fun validateProduct(product: Product): String? {
+        return when {
+            !ProductValidator.isValidTitle(product.title) -> "Title cannot be blank"
+            !ProductValidator.isValidDescription(product.description) -> "Description must be at least 5 chars long"
+            !ProductValidator.isValidImageUrl(product.imageUrl) -> "Image URL must start with http or https"
+            else -> null
+        }
     }
 
     // viewModelScope is lifecycle aware - if the VM is destroyed (ex Activity is gone), coroutines
