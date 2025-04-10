@@ -8,6 +8,7 @@ local.properties
 # Gradle Wrapper - files to keep!
 !gradle/wrapper/gradle-wrapper.properties
 !gradle/wrapper/gradle-wrapper.jar
+gradle/wrapper/wrapper/dists/
 
 #Gradle caches
 gradle/wrapper/.tmp/
