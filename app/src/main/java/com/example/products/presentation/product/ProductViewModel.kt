@@ -10,13 +10,14 @@ import com.example.products.core.usecase.UseCases
 import com.example.products.core.validation.ProductValidator
 import com.example.products.framework.remote.ApiService
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /*
     Fragment ViewModel
 */
-
 @HiltViewModel // VM that receives dependencies via constructor injection
 class ProductViewModel @Inject constructor(
     private val useCases: UseCases,
@@ -28,6 +29,8 @@ class ProductViewModel @Inject constructor(
 
     private val _validationError = MutableLiveData<String?>()
 
+    private val _saved = MutableStateFlow(false)
+
     // getter
     val products: LiveData<List<Product>> get() = _products
 
@@ -35,8 +38,7 @@ class ProductViewModel @Inject constructor(
 
     // flag that tells the UI a product has been successfully saved
     // if true, the Fragment might show a Toast or navigate away
-    val saved = MutableLiveData<Boolean>()
-
+    val saved: StateFlow<Boolean> get() = _saved
 
     // called auto when the VM is created; loads existing products immediately
     init {
@@ -59,15 +61,15 @@ class ProductViewModel @Inject constructor(
         val errorMessage = validateProduct(product)
 
         if (errorMessage != null) {
-            _validationError.postValue(errorMessage)
+            _validationError.value = errorMessage
             return
         }
 
         viewModelScope.launch {
             useCases.addProduct(product)
-            saved.postValue(true)
+            _saved.value = true
             // clear errors
-            _validationError.postValue(null)
+            _validationError.value = null
             loadProducts()
         }
     }
@@ -106,6 +108,7 @@ class ProductViewModel @Inject constructor(
                 // get the data from db
                 loadProducts()
 
+                // Avoid calling this directly in VM -> inject the Logger interface (can be mocked in tests)
                 Log.d("ProductViewModel", "Get products from API, save them to DB and load them")
             } catch (e: Exception) {
                 Log.e("ProductViewModel", "Sync products list from server failed", e)

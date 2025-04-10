@@ -1,14 +1,27 @@
-# Gradle
+# === Gradle ===
 .gradle/
-build/
+**/build/
 .cxx/
 .externalNativeBuild/
-
-# Local Configuration
 local.properties
 
-# IntelliJ / Android Studio
+# Gradle Wrapper - files to keep!
+!gradle/wrapper/gradle-wrapper.properties
+!gradle/wrapper/gradle-wrapper.jar
+gradle/wrapper/wrapper/dists/
+
+#Gradle caches
+gradle/wrapper/.tmp/
+gradle/wrapper/android/
+gradle/wrapper/caches/
+gradle/wrapper/daemon/
+gradle/wrapper/jdks/
+gradle/wrapper/kotlin-profile/
+gradle/wrapper/native/
+
+# === IntelliJ / Android Studio ===
 *.iml
+.idea/
 .idea/caches/
 .idea/libraries/
 .idea/modules.xml
@@ -17,12 +30,10 @@ local.properties
 .idea/assetWizardSettings.xml
 .idea/deploymentTargetSelector.xml
 
-# Android Captures
+# === Android-specific ===
 captures/
-
-# Kotlin/Java build output
-*/build/
-
-# APK
 *.apk
 *.ap_
+
+# === Misc ===
+.DS_Store

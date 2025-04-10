@@ -23,4 +23,8 @@ class SharedViewModel @Inject constructor() : ViewModel() {
     fun selectProduct(productId: Long) {
         _selectedProductId.value = productId
     }
+
+    fun resetSelectedProductId() {
+        _selectedProductId.value = 0L
+    }
 }
