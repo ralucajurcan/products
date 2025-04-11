@@ -6,5 +6,5 @@ data class Product(
     var creationTime: Long,
     var updateTime: Long,
     var id: Long = 0,
-    val imageUrl: String?
+    val imageUrl: String
 )

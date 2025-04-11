@@ -16,7 +16,7 @@ data class ProductEntity(
     var updateTime: Long,
 
     @ColumnInfo(name = "image_url")
-    val imageUrl: String? = null,
+    val imageUrl: String,
 
     @PrimaryKey(autoGenerate = true)
     var id: Long = 0L

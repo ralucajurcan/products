@@ -34,7 +34,7 @@ class GetAllProductsTest {
 
         // then
         result.collect {
-            notes -> assertEquals(testProducts, notes)
+            products -> assertEquals(testProducts, products)
         }
     }
 

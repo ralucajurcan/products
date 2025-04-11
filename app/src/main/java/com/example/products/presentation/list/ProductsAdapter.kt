@@ -12,7 +12,7 @@ import com.example.products.common.model.Product
 
 class ProductsAdapter(
     private var products: List<Product>,
-    private val onNoteClick: (Product) -> Unit
+    private val onProductClick: (Product) -> Unit
 ) : RecyclerView.Adapter<ProductsAdapter.ProductViewHolder>() {
 
     inner class ProductViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -27,17 +27,17 @@ class ProductsAdapter(
     }
 
     override fun onBindViewHolder(holder: ProductViewHolder, position: Int) {
-        val note = products[position]
-        holder.productText.text = note.title
+        val product = products[position]
+        holder.productText.text = product.title
 
         Glide.with(holder.itemView.context)
             .asBitmap()
-            .load(note.imageUrl)
+            .load(product.imageUrl)
             .placeholder(R.drawable.placeholder)
             .into(holder.productImage)
 
         holder.itemView.setOnClickListener {
-            onNoteClick(note)
+            onProductClick(product)
         }
     }
 

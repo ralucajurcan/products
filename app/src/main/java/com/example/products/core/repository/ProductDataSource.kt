@@ -8,5 +8,5 @@ interface ProductDataSource {
 
     suspend fun addProduct(product: Product)
 
-    suspend fun getProductById(noteId: Long): Product?
+    suspend fun getProductById(productId: Long): Product?
 }

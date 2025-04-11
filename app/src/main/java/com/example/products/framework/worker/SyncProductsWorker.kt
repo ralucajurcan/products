@@ -17,7 +17,6 @@ import kotlinx.coroutines.withContext
 // annotation tells Hilt that this is a worker class where dependencies should be injected using Hilt
 // CoroutineWorker - abstract class that lets you run background work using coroutines
 
-// Keeping this for posterity
 @HiltWorker
 class SyncProductsWorker @AssistedInject constructor( // mix Hilt dependencies + manually passed args
     @Assisted appContext: Context,                  // passed manually by WorkManager

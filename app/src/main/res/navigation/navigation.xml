@@ -3,25 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/navigation"
-    app:startDestination="@id/listFragment">
+    app:startDestination="@id/products_graph">
 
-    <fragment
-        android:id="@+id/listFragment"
-        android:name="com.example.products.presentation.list.ListFragment"
-        android:label="fragment_list"
-        tools:layout="@layout/fragment_list" >
-        <action
-            android:id="@+id/actionGoToProduct"
-            app:destination="@id/productFragment" />
-    </fragment>
-    <fragment
-        android:id="@+id/productFragment"
-        android:name="com.example.products.presentation.product.ProductFragment"
-        android:label="fragment_product"
-        tools:layout="@layout/fragment_product" >
-        <argument
-            android:name="productId"
-            app:argType="long"
-            android:defaultValue="0L" />
-    </fragment>
+    <include app:graph="@navigation/products_graph" />
 </navigation>

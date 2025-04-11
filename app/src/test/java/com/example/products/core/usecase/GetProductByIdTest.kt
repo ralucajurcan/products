@@ -27,7 +27,7 @@ class GetProductByIdTest {
     fun getProductById_success() = runTest {
         // given
         val product = Product(
-            title = "test note",
+            title = "test product",
             description = "test content",
             creationTime = 1234L,
             updateTime = 1234L,
