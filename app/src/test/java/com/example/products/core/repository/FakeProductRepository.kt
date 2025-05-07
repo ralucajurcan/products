@@ -18,4 +18,8 @@ class FakeProductRepository : ProductRepository {
     override suspend fun getProductById(productId: Long): Product? {
         return products.find { it.id == productId }
     }
+
+    override suspend fun syncProducts() {
+        TODO("Not yet implemented")
+    }
 }

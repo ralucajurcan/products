@@ -5,8 +5,6 @@ import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.example.products.common.model.Product
-import com.example.products.framework.di.ApiServiceEntryPoint
 import com.example.products.framework.di.ProductRepositoryEntryPoint
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -27,33 +25,14 @@ class SyncProductsWorker @AssistedInject constructor( // mix Hilt dependencies +
         try {
             Log.d("SyncProductsWorker", "Running background work...")
 
-            // Manually access repository using Hilt EntryPoint
-            // Hilt can't inject dependencies directly into Workers unless they're constructor parameters
-            val productRepositoryEntryPoint = EntryPointAccessors.fromApplication(
+            val entryPoint = EntryPointAccessors.fromApplication(
                 applicationContext,
                 ProductRepositoryEntryPoint::class.java
             )
-            val repository = productRepositoryEntryPoint.productRepository()
 
-            val apiServiceEntryPoint = EntryPointAccessors.fromApplication(
-                applicationContext,
-                ApiServiceEntryPoint::class.java
-            )
-            val apiService = apiServiceEntryPoint.apiService()
+            val repository = entryPoint.productRepository()
 
-            // fetch data from fake api
-            val response = apiService.fetchFakeProducts()
-
-            response.products.take(5).forEach { prod ->
-                val product = Product(
-                    title = prod.title,
-                    description = prod.description,
-                    imageUrl = prod.thumbnail,
-                    creationTime = System.currentTimeMillis(),
-                    updateTime = System.currentTimeMillis()
-                )
-                repository.addProduct(product)
-            }
+            repository.syncProducts()
 
             Log.d("SyncProductsWorker", "Product inserted from background work")
             Result.success()

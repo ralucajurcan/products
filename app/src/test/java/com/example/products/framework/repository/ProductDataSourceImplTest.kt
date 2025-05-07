@@ -5,6 +5,8 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.example.products.common.model.Product
 import com.example.products.framework.db.ProductDatabase
+import com.example.products.framework.remote.ApiService
+import io.mockk.mockk
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -21,6 +23,7 @@ class ProductDataSourceImplTest {
     private lateinit var context: Context
     private lateinit var database: ProductDatabase
     private lateinit var dataSource: ProductDataSourceImpl
+    private lateinit var apiService: ApiService
 
     @Before
     fun setup() {
@@ -31,7 +34,8 @@ class ProductDataSourceImplTest {
         ).allowMainThreadQueries() // disables running on the main thread for unit tests
             .build()
 
-        dataSource = ProductDataSourceImpl(database.productDao())
+        apiService = mockk(relaxed = true)
+        dataSource = ProductDataSourceImpl(database.productDao(), apiService)
     }
 
     @After
