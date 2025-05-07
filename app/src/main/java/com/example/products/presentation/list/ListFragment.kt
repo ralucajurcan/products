@@ -57,9 +57,6 @@ class ListFragment : Fragment() {
             findNavController().navigate(action)
         }
 
-        // fetch from network and store data into db
-        viewModel.syncProductListFromServer()
-
         observeViewModel()
     }
 

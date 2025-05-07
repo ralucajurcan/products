@@ -8,7 +8,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.products.common.model.Product
 import com.example.products.core.usecase.UseCases
 import com.example.products.core.validation.ProductValidator
-import com.example.products.framework.remote.ApiService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,8 +19,7 @@ import javax.inject.Inject
 */
 @HiltViewModel // VM that receives dependencies via constructor injection
 class ProductViewModel @Inject constructor(
-    private val useCases: UseCases,
-    private val apiService: ApiService
+    private val useCases: UseCases
 ) : ViewModel() {
 
     // data holder that the UI can observe and holds a list of products - don't let the UI change the data directly
@@ -70,7 +68,6 @@ class ProductViewModel @Inject constructor(
             _saved.value = true
             // clear errors
             _validationError.value = null
-            loadProducts()
         }
     }
 
@@ -82,38 +79,6 @@ class ProductViewModel @Inject constructor(
             result.postValue(product)
         }
         return result
-    }
-
-    fun syncProductListFromServer() {
-        viewModelScope.launch {
-            try {
-                // fetch data from fake api
-                val response = apiService.fetchFakeProducts()
-
-                // randomly extract 5 products
-                val randomProducts = response.products.shuffled().take(5)
-
-                // save them to the db
-                randomProducts.forEach { prod ->
-                    val product = Product(
-                        title = prod.title,
-                        description = prod.description,
-                        imageUrl = prod.thumbnail,
-                        creationTime = System.currentTimeMillis(),
-                        updateTime = System.currentTimeMillis()
-                    )
-                    useCases.addProduct(product)
-                }
-
-                // get the data from db
-                loadProducts()
-
-                // Avoid calling this directly in VM -> inject the Logger interface (can be mocked in tests)
-                Log.d("ProductViewModel", "Get products from API, save them to DB and load them")
-            } catch (e: Exception) {
-                Log.e("ProductViewModel", "Sync products list from server failed", e)
-            }
-        }
     }
 
     private fun validateProduct(product: Product): String? {
