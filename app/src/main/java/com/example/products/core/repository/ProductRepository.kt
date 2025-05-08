@@ -7,4 +7,5 @@ interface ProductRepository {
     suspend fun addProduct(product: Product)
     fun getAllProducts(): Flow<List<Product>>
     suspend fun getProductById(productId: Long): Product?
+    suspend fun syncProducts()
 }

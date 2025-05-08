@@ -9,4 +9,6 @@ interface ProductDataSource {
     suspend fun addProduct(product: Product)
 
     suspend fun getProductById(productId: Long): Product?
+
+    suspend fun syncProducts()
 }
