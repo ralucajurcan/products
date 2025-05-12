@@ -8,11 +8,11 @@ import androidx.lifecycle.viewModelScope
 import com.example.products.common.model.Product
 import com.example.products.core.usecase.UseCases
 import com.example.products.core.validation.ProductValidator
-import com.example.products.framework.remote.ApiService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
 /*
@@ -20,9 +20,10 @@ import javax.inject.Inject
 */
 @HiltViewModel // VM that receives dependencies via constructor injection
 class ProductViewModel @Inject constructor(
-    private val useCases: UseCases,
-    private val apiService: ApiService
+    private val useCases: UseCases
 ) : ViewModel() {
+
+    private val logger = LoggerFactory.getLogger("ProductViewModel")
 
     // data holder that the UI can observe and holds a list of products - don't let the UI change the data directly
     private val _products = MutableLiveData<List<Product>>()
@@ -30,6 +31,8 @@ class ProductViewModel @Inject constructor(
     private val _validationError = MutableLiveData<String?>()
 
     private val _saved = MutableStateFlow(false)
+
+    private val _isLoading = MutableLiveData<Boolean>()
 
     // getter
     val products: LiveData<List<Product>> get() = _products
@@ -39,6 +42,8 @@ class ProductViewModel @Inject constructor(
     // flag that tells the UI a product has been successfully saved
     // if true, the Fragment might show a Toast or navigate away
     val saved: StateFlow<Boolean> get() = _saved
+
+    val isLoading: LiveData<Boolean> get() = _isLoading
 
     // called auto when the VM is created; loads existing products immediately
     init {
@@ -50,8 +55,11 @@ class ProductViewModel @Inject constructor(
     // posts the new list of products to the UI
     private fun loadProducts() {
         viewModelScope.launch {
+            _isLoading.value = true
+
             useCases.getAllProducts().collect { productList ->
                 _products.postValue(productList)
+                _isLoading.postValue(false)
             }
         }
     }
@@ -70,7 +78,6 @@ class ProductViewModel @Inject constructor(
             _saved.value = true
             // clear errors
             _validationError.value = null
-            loadProducts()
         }
     }
 
@@ -84,44 +91,25 @@ class ProductViewModel @Inject constructor(
         return result
     }
 
-    fun syncProductListFromServer() {
-        viewModelScope.launch {
-            try {
-                // fetch data from fake api
-                val response = apiService.fetchFakeProducts()
-
-                // randomly extract 5 products
-                val randomProducts = response.products.shuffled().take(5)
-
-                // save them to the db
-                randomProducts.forEach { prod ->
-                    val product = Product(
-                        title = prod.title,
-                        description = prod.description,
-                        imageUrl = prod.thumbnail,
-                        creationTime = System.currentTimeMillis(),
-                        updateTime = System.currentTimeMillis()
-                    )
-                    useCases.addProduct(product)
-                }
-
-                // get the data from db
-                loadProducts()
-
-                // Avoid calling this directly in VM -> inject the Logger interface (can be mocked in tests)
-                Log.d("ProductViewModel", "Get products from API, save them to DB and load them")
-            } catch (e: Exception) {
-                Log.e("ProductViewModel", "Sync products list from server failed", e)
-            }
-        }
-    }
-
     private fun validateProduct(product: Product): String? {
         return when {
             !ProductValidator.isValidTitle(product.title) -> "Title cannot be blank"
             !ProductValidator.isValidDescription(product.description) -> "Description must be at least 5 chars long"
             !ProductValidator.isValidImageUrl(product.imageUrl) -> "Image URL must start with http or https"
             else -> null
+        }
+    }
+
+    fun syncProductsFromNetwork() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                useCases.syncProducts()
+            } catch (e: Exception) {
+                logger.error("[ProductViewModel] error: ", e)
+            } finally {
+                _isLoading.value = false
+            }
         }
     }
 

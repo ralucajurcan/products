@@ -2,9 +2,7 @@ package com.example.products.presentation
 
 import com.example.products.common.model.Product
 import com.example.products.core.usecase.UseCases
-import com.example.products.framework.remote.ApiService
 import com.example.products.presentation.product.ProductViewModel
-import com.example.products.testUtils.FakeApiResponseFactory
 import com.example.products.testUtils.MainDispatcherRule
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -32,12 +30,11 @@ class ProductViewModelTest {
     val dispatcherRule = MainDispatcherRule()
 
     private val useCases: UseCases = mockk(relaxed = true)
-    private val apiService: ApiService = mockk()
     private lateinit var viewModel: ProductViewModel
 
     @Before
     fun setup() {
-        viewModel = ProductViewModel(useCases, apiService)
+        viewModel = ProductViewModel(useCases)
     }
 
     @Test
@@ -80,48 +77,6 @@ class ProductViewModelTest {
         // then
         assertEquals("Title cannot be blank", viewModel.validationError.value)
         coVerify(exactly = 0) { useCases.addProduct(any()) }
-    }
-
-    @Test
-    fun syncProductListFromServerSuccess() = runTest {
-        // given
-        val apiResponse = FakeApiResponseFactory.createFakeProductResponse(count = 10)
-
-        coEvery { apiService.fetchFakeProducts() } returns apiResponse
-
-        // when
-        viewModel.syncProductListFromServer()
-        advanceUntilIdle()
-
-        // then
-        coVerify(exactly = 5) { useCases.addProduct(any()) }
-    }
-
-    @Test
-    fun syncProductListFromServer_emptyResponse_doesNotFail() = runTest {
-        // given
-        val apiResponse = FakeApiResponseFactory.createFakeProductResponse(count = 0)
-        coEvery { apiService.fetchFakeProducts() } returns apiResponse
-
-        // when
-        viewModel.syncProductListFromServer()
-        advanceUntilIdle()
-
-        // then
-        coVerify(exactly = 0) { useCases.addProduct(any()) }
-    }
-
-    @Test
-    fun syncProductListFromServer_apiFails_doesNotCrash() = runTest {
-        // given
-        coEvery { apiService.fetchFakeProducts() } throws RuntimeException("API down")
-
-        // when
-        viewModel.syncProductListFromServer()
-        advanceUntilIdle()
-
-        // then
-        coVerify { apiService.fetchFakeProducts() }
     }
 
     @Ignore("stateflow vs livedata")

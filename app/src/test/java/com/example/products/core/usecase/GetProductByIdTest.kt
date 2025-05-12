@@ -19,7 +19,8 @@ class GetProductByIdTest {
         useCases = UseCases(
             addProduct = AddProduct(fakeProductRepository),
             getAllProducts = GetAllProducts(fakeProductRepository),
-            getProduct = { id -> fakeProductRepository.getProductById(id) }
+            getProduct = { id -> fakeProductRepository.getProductById(id) },
+            syncProducts = { fakeProductRepository.syncProducts() }
         )
     }
 

@@ -7,5 +7,6 @@ import com.example.products.common.model.Product
 data class UseCases(
     val addProduct: AddProduct,
     val getAllProducts: GetAllProducts,
-    val getProduct: suspend(Long) -> Product?
+    val getProduct: suspend(Long) -> Product?,
+    val syncProducts: suspend () -> Unit
 )
