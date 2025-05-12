@@ -12,6 +12,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
 /*
@@ -22,12 +23,16 @@ class ProductViewModel @Inject constructor(
     private val useCases: UseCases
 ) : ViewModel() {
 
+    private val logger = LoggerFactory.getLogger("ProductViewModel")
+
     // data holder that the UI can observe and holds a list of products - don't let the UI change the data directly
     private val _products = MutableLiveData<List<Product>>()
 
     private val _validationError = MutableLiveData<String?>()
 
     private val _saved = MutableStateFlow(false)
+
+    private val _isLoading = MutableLiveData<Boolean>()
 
     // getter
     val products: LiveData<List<Product>> get() = _products
@@ -37,6 +42,8 @@ class ProductViewModel @Inject constructor(
     // flag that tells the UI a product has been successfully saved
     // if true, the Fragment might show a Toast or navigate away
     val saved: StateFlow<Boolean> get() = _saved
+
+    val isLoading: LiveData<Boolean> get() = _isLoading
 
     // called auto when the VM is created; loads existing products immediately
     init {
@@ -48,8 +55,11 @@ class ProductViewModel @Inject constructor(
     // posts the new list of products to the UI
     private fun loadProducts() {
         viewModelScope.launch {
+            _isLoading.value = true
+
             useCases.getAllProducts().collect { productList ->
                 _products.postValue(productList)
+                _isLoading.postValue(false)
             }
         }
     }
@@ -87,6 +97,19 @@ class ProductViewModel @Inject constructor(
             !ProductValidator.isValidDescription(product.description) -> "Description must be at least 5 chars long"
             !ProductValidator.isValidImageUrl(product.imageUrl) -> "Image URL must start with http or https"
             else -> null
+        }
+    }
+
+    fun syncProductsFromNetwork() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                useCases.syncProducts()
+            } catch (e: Exception) {
+                logger.error("[ProductViewModel] error: ", e)
+            } finally {
+                _isLoading.value = false
+            }
         }
     }
 

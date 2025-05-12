@@ -57,7 +57,8 @@ abstract class AppModule {
             return UseCases(
                 addProduct = AddProduct(repository),
                 getAllProducts = GetAllProducts(repository),
-                getProduct = { id -> repository.getProductById(id)}
+                getProduct = { id -> repository.getProductById(id)},
+                syncProducts = { repository.syncProducts() }
             )
         }
 

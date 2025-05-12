@@ -57,14 +57,22 @@ class ListFragment : Fragment() {
             findNavController().navigate(action)
         }
 
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            viewModel.syncProductsFromNetwork()
+        }
+
         observeViewModel()
     }
 
     private fun observeViewModel() {
         viewModel.products.observe(viewLifecycleOwner) {
-            binding.productsListView.visibility = View.VISIBLE
-            binding.loadingView.visibility = View.GONE
             productsAdapter.updateProducts(it)
+        }
+
+        viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
+                binding.loadingView.visibility = if (isLoading) View.VISIBLE else View.GONE
+                binding.productsListView.visibility = if (isLoading) View.GONE else View.VISIBLE
+                binding.swipeRefreshLayout.isRefreshing = isLoading
         }
     }
 
