@@ -7,6 +7,25 @@ plugins {
 }
 
 android {
+    flavorDimensions += "environment"
+
+    productFlavors {
+        create("dev") {
+            dimension = "environment"
+            applicationIdSuffix = ".dev"
+            versionNameSuffix = "-dev"
+            resValue("string", "app_name", "Products Dev")
+            buildConfigField("String", "BASE_URL", "\"https://dummyjson.com/\"")
+        }
+        create("qa") {
+            dimension = "environment"
+            applicationIdSuffix = ".qa"
+            versionNameSuffix = "-qa"
+            resValue("string", "app_name", "Products QA")
+            buildConfigField("String", "BASE_URL", "\"https://dummyjson.com/\"")
+        }
+    }
+
     namespace = "com.example.products"
     compileSdk = 34
 
@@ -21,6 +40,7 @@ android {
     buildFeatures {
         viewBinding = true
         compose = true
+        buildConfig = true
     }
 
     buildTypes {
