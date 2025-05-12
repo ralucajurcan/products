@@ -1,5 +1,6 @@
 package com.example.products.framework.di
 
+import com.example.products.BuildConfig
 import com.example.products.auth.JwtAuthInterceptor
 import com.example.products.framework.remote.ApiService
 import dagger.Module
@@ -15,7 +16,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    private const val BASE_URL = "https://dummyjson.com/"
+    private const val BASE_URL = BuildConfig.BASE_URL
 
     // builds the HTTP client; different interceptors can be plugged-in (logging, JWT etc)
     @Provides
