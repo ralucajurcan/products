@@ -25,4 +25,8 @@ class ProductRepositoryImpl @Inject constructor(
     override suspend fun syncProducts() {
         return productDataSource.syncProducts()
     }
+
+    override fun getProductAsFlow(id: Long): Flow<Product?> {
+        return productDataSource.getProductAsFlow(id)
+    }
 }

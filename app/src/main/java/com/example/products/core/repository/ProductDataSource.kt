@@ -11,4 +11,6 @@ interface ProductDataSource {
     suspend fun getProductById(productId: Long): Product?
 
     suspend fun syncProducts()
+
+    fun getProductAsFlow(id: Long): Flow<Product?>
 }

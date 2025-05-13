@@ -26,24 +26,12 @@ class ProductViewModel @Inject constructor(
 
     private val logger = LoggerFactory.getLogger("ProductViewModel")
 
-    private val _uiState = MutableStateFlow(ProductUiState())
+    val products = useCases.getAllProducts()
+
+    private val _uiState = MutableStateFlow(
+        ProductUiState(isLoading = false, isSaved = false, validationError = null)
+    )
     val uiState: StateFlow<ProductUiState> = _uiState
-
-    // launches a coroutine which is tied to the VM scope (lifecycle)
-    // posts the new list of products to the UI
-    private fun loadProducts() {
-        viewModelScope.launch(Dispatchers.IO) {
-            useCases.getAllProducts().collect {productList ->
-                _uiState.update { currentState ->
-                    currentState.copy(
-                        products = productList,
-                        isLoading = false
-                    )
-
-                }
-            }
-        }
-    }
 
     // saves the product and notifies the UI; then refreshes the products list
     fun saveProduct(product: Product) {
@@ -60,19 +48,10 @@ class ProductViewModel @Inject constructor(
                 isSaved = true,
                 validationError = null)
             }
-            loadProducts()
         }
     }
 
-    // retrieves the product and notifies the UI
-    fun getProduct(productId: Long): LiveData<Product?> {
-        val result = MutableLiveData<Product?>()
-        viewModelScope.launch(Dispatchers.IO) {
-            val product = useCases.getProduct(productId)
-            result.postValue(product)
-        }
-        return result
-    }
+    fun getProduct(productId: Long) = useCases.getProductAsFlow(productId)
 
     private fun validateProduct(product: Product): String? {
         return when {

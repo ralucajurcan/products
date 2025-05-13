@@ -20,7 +20,8 @@ class GetProductByIdTest {
             addProduct = AddProduct(fakeProductRepository),
             getAllProducts = GetAllProducts(fakeProductRepository),
             getProduct = { id -> fakeProductRepository.getProductById(id) },
-            syncProducts = { fakeProductRepository.syncProducts() }
+            syncProducts = { fakeProductRepository.syncProducts() },
+            getProductAsFlow = fakeProductRepository::getProductAsFlow
         )
     }
 

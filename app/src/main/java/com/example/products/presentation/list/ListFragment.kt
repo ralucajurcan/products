@@ -43,10 +43,9 @@ class ListFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
-        _binding = FragmentListBinding.inflate(inflater, container, false)
-        return _binding!!.root
-    }
+    ) = FragmentListBinding.inflate(inflater, container, false).also {
+        _binding = it
+    }.root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -70,17 +69,30 @@ class ListFragment : Fragment() {
     }
 
     private fun observeViewModel() {
-        viewLifecycleOwner.lifecycleScope.launch {
+        lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.uiState.collect { state ->
-                    val binding = _binding ?: return@collect
-                    binding.loadingView.visibility = if (state.isLoading) View.VISIBLE else View.GONE
-                    binding.productsListView.visibility = if (state.isLoading) View.GONE else View.VISIBLE
+                launch {
+                    viewModel.products.collect { productList ->
+                        productsAdapter.updateProducts(productList)
+                    }
+                }
+                launch {
+                    viewModel.uiState.collect { state ->
+                        val binding = _binding ?: return@collect
+                        binding.loadingView.visibility =
+                            if (state.isLoading) View.VISIBLE else View.GONE
+                        binding.productsListView.visibility =
+                            if (state.isLoading) View.GONE else View.VISIBLE
 
-                    productsAdapter.updateProducts(state.products)
+                        binding.swipeRefreshLayout.isRefreshing = false
 
-                    if (state.validationError != null) {
-                        Toast.makeText(requireContext(), state.validationError, Toast.LENGTH_SHORT).show()
+                        if (state.validationError != null) {
+                            Toast.makeText(
+                                requireContext(),
+                                state.validationError,
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
                     }
                 }
             }

@@ -73,23 +73,4 @@ class ProductViewModelTest {
         // then
         coVerify(exactly = 0) { useCases.addProduct(any()) }
     }
-
-    @Ignore("stateflow vs livedata")
-    @Test
-    fun getProductSuccess() = runTest {
-        // given
-        val product = Product("Test", "Description", 0, 0, 123L, "https://example.com")
-        coEvery { useCases.getProduct(123L) } returns product
-
-        // when
-        val liveData = viewModel.getProduct(123L)
-        var observedProduct: Product? = null
-        liveData.observeForever {
-            observedProduct = it
-        }
-        advanceUntilIdle()
-
-        // then
-        assertEquals(product, observedProduct)
-    }
 }

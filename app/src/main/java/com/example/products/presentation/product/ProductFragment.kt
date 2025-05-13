@@ -48,10 +48,11 @@ class ProductFragment : Fragment(R.layout.fragment_product) {
         super.onViewCreated(view, savedInstanceState)
         val binding = _binding ?: return
 
-        // as an example - usage of the activity VM
-        sharedViewModel.selectedProductId.observe(viewLifecycleOwner) { productId ->
-            if (productId != 0L) {
-                viewModel.getProduct(productId).observe(viewLifecycleOwner) { product ->
+        val productId = sharedViewModel.selectedProductId.value ?: 0L
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.getProduct(productId).collect { product ->
                     product?.let {
                         currentProduct = it
                         binding.titleView.setText(it.title)
@@ -63,20 +64,6 @@ class ProductFragment : Fragment(R.layout.fragment_product) {
                             .into(binding.imagePreview)
                     }
                 }
-            } else {
-                // clear everything for the "add new product" use case
-                currentProduct = Product(
-                    title = "",
-                    description = "",
-                    imageUrl = "",
-                    creationTime = 0L,
-                    updateTime = 0L
-                )
-
-                binding.titleView.setText("")
-                binding.contentView.setText("")
-                binding.imageUrlView.setText("")
-                binding.imagePreview.setImageResource(R.drawable.placeholder)
             }
         }
 
@@ -116,6 +103,8 @@ class ProductFragment : Fragment(R.layout.fragment_product) {
             sharedViewModel.resetSelectedProductId()
             Navigation.findNavController(it).popBackStack()
         }
+
+        observeUiState()
     }
 
     private fun observeUiState() {
