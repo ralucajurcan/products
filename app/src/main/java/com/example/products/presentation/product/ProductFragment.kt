@@ -28,7 +28,6 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 class ProductFragment : Fragment(R.layout.fragment_product) {
     private var _binding: FragmentProductBinding? = null
-    private val binding get() = _binding!!
 
     // delegated properties
     private val viewModel: ProductViewModel by viewModels()
@@ -42,11 +41,12 @@ class ProductFragment : Fragment(R.layout.fragment_product) {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentProductBinding.inflate(inflater, container, false)
-        return binding.root
+        return _binding!!.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val binding = _binding ?: return
 
         // as an example - usage of the activity VM
         sharedViewModel.selectedProductId.observe(viewLifecycleOwner) { productId ->
@@ -116,30 +116,23 @@ class ProductFragment : Fragment(R.layout.fragment_product) {
             sharedViewModel.resetSelectedProductId()
             Navigation.findNavController(it).popBackStack()
         }
-
-        observeViewModel()
-
-        viewModel.validationError.observe(viewLifecycleOwner) { error ->
-            error?.let {
-                Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
-            }
-        }
     }
 
-    private fun observeViewModel() {
+    private fun observeUiState() {
         // launches a coroutine tied to the Fragment's lifecycle; when the fragment is destroyed, the coroutine is auto cancelled.
         lifecycleScope.launch {
             // the code only runs when the fragment's view is at least in the started state
             viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.saved.collect { isStateSaved ->
-                    if (isStateSaved) {
-                        binding.titleView.clearFocus()
-                        binding.contentView.clearFocus()
+                viewModel.uiState.collect { state ->
+                    val binding = _binding ?: return@collect
+
+                    if (state.isSaved) {
                         hideKeyboard()
-
                         Toast.makeText(requireContext(), "Done!", Toast.LENGTH_SHORT).show()
-
                         Navigation.findNavController(binding.titleView).popBackStack()
+                    }
+                    state.validationError?.let {
+                        Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
                     }
                 }
             }

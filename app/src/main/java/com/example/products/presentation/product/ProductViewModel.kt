@@ -1,6 +1,5 @@
 package com.example.products.presentation.product
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -9,8 +8,10 @@ import com.example.products.common.model.Product
 import com.example.products.core.usecase.UseCases
 import com.example.products.core.validation.ProductValidator
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
@@ -25,41 +26,21 @@ class ProductViewModel @Inject constructor(
 
     private val logger = LoggerFactory.getLogger("ProductViewModel")
 
-    // data holder that the UI can observe and holds a list of products - don't let the UI change the data directly
-    private val _products = MutableLiveData<List<Product>>()
-
-    private val _validationError = MutableLiveData<String?>()
-
-    private val _saved = MutableStateFlow(false)
-
-    private val _isLoading = MutableLiveData<Boolean>()
-
-    // getter
-    val products: LiveData<List<Product>> get() = _products
-
-    val validationError: LiveData<String?> get() = _validationError
-
-    // flag that tells the UI a product has been successfully saved
-    // if true, the Fragment might show a Toast or navigate away
-    val saved: StateFlow<Boolean> get() = _saved
-
-    val isLoading: LiveData<Boolean> get() = _isLoading
-
-    // called auto when the VM is created; loads existing products immediately
-    init {
-        Log.d("ProductViewModel", "Fragment ViewModel init ...")
-        loadProducts()
-    }
+    private val _uiState = MutableStateFlow(ProductUiState())
+    val uiState: StateFlow<ProductUiState> = _uiState
 
     // launches a coroutine which is tied to the VM scope (lifecycle)
     // posts the new list of products to the UI
     private fun loadProducts() {
-        viewModelScope.launch {
-            _isLoading.value = true
+        viewModelScope.launch(Dispatchers.IO) {
+            useCases.getAllProducts().collect {productList ->
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        products = productList,
+                        isLoading = false
+                    )
 
-            useCases.getAllProducts().collect { productList ->
-                _products.postValue(productList)
-                _isLoading.postValue(false)
+                }
             }
         }
     }
@@ -69,22 +50,24 @@ class ProductViewModel @Inject constructor(
         val errorMessage = validateProduct(product)
 
         if (errorMessage != null) {
-            _validationError.value = errorMessage
+            _uiState.update { it.copy(validationError = errorMessage) }
             return
         }
 
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             useCases.addProduct(product)
-            _saved.value = true
-            // clear errors
-            _validationError.value = null
+            _uiState.update { it.copy(
+                isSaved = true,
+                validationError = null)
+            }
+            loadProducts()
         }
     }
 
     // retrieves the product and notifies the UI
     fun getProduct(productId: Long): LiveData<Product?> {
         val result = MutableLiveData<Product?>()
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val product = useCases.getProduct(productId)
             result.postValue(product)
         }
@@ -101,14 +84,15 @@ class ProductViewModel @Inject constructor(
     }
 
     fun syncProductsFromNetwork() {
-        viewModelScope.launch {
-            _isLoading.value = true
+        viewModelScope.launch(Dispatchers.IO) {
+            _uiState.update { it.copy(isLoading = true) }
+
             try {
                 useCases.syncProducts()
             } catch (e: Exception) {
                 logger.error("[ProductViewModel] error: ", e)
             } finally {
-                _isLoading.value = false
+                _uiState.update { it.copy(isLoading = false) }
             }
         }
     }

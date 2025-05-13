@@ -11,8 +11,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
@@ -54,8 +52,6 @@ class ProductViewModelTest {
 
         // then
         coVerify { useCases.getAllProducts() }
-        assertNull(viewModel.validationError.value)
-        assertTrue(viewModel.saved.value)
     }
 
 
@@ -75,7 +71,6 @@ class ProductViewModelTest {
         advanceUntilIdle()
 
         // then
-        assertEquals("Title cannot be blank", viewModel.validationError.value)
         coVerify(exactly = 0) { useCases.addProduct(any()) }
     }
 

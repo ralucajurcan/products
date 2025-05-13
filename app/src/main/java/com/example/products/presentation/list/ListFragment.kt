@@ -5,21 +5,25 @@ import android.view.LayoutInflater
 import androidx.fragment.app.Fragment
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.products.databinding.FragmentListBinding
 import com.example.products.presentation.product.ProductViewModel
 import com.example.products.presentation.shared.SharedViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class ListFragment : Fragment() {
 
     // view binding
     private var _binding: FragmentListBinding? = null
-    private val binding get() = _binding!!
 
     // gives an instance of ProductViewModel scoped to this Fragment
     private val viewModel: ProductViewModel by viewModels()
@@ -41,11 +45,12 @@ class ListFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentListBinding.inflate(inflater, container, false)
-        return binding.root
+        return _binding!!.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val binding = _binding ?: return
 
         binding.productsListView.apply {
             layoutManager = LinearLayoutManager(context)
@@ -65,14 +70,20 @@ class ListFragment : Fragment() {
     }
 
     private fun observeViewModel() {
-        viewModel.products.observe(viewLifecycleOwner) {
-            productsAdapter.updateProducts(it)
-        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect { state ->
+                    val binding = _binding ?: return@collect
+                    binding.loadingView.visibility = if (state.isLoading) View.VISIBLE else View.GONE
+                    binding.productsListView.visibility = if (state.isLoading) View.GONE else View.VISIBLE
 
-        viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-                binding.loadingView.visibility = if (isLoading) View.VISIBLE else View.GONE
-                binding.productsListView.visibility = if (isLoading) View.GONE else View.VISIBLE
-                binding.swipeRefreshLayout.isRefreshing = isLoading
+                    productsAdapter.updateProducts(state.products)
+
+                    if (state.validationError != null) {
+                        Toast.makeText(requireContext(), state.validationError, Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
         }
     }
 
