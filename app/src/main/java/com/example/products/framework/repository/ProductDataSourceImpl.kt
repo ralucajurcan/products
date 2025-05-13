@@ -41,6 +41,12 @@ class ProductDataSourceImpl @Inject constructor(
         product.toEntity()})
     }
 
+    override fun getProductAsFlow(id: Long): Flow<Product?> {
+        return productDao.getProductAsFlow(id).map {
+            it?.toProduct()
+        }
+    }
+
     override fun getAllProducts(): Flow<List<Product>> {
         return productDao.getAllProducts().map { list ->
             list.map { it.toProduct() }

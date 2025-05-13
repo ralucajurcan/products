@@ -22,4 +22,8 @@ class FakeProductRepository : ProductRepository {
     override suspend fun syncProducts() {
         TODO("Not yet implemented")
     }
+
+    override fun getProductAsFlow(id: Long): Flow<Product?> {
+        TODO("Not yet implemented")
+    }
 }

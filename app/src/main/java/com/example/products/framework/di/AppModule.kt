@@ -58,7 +58,8 @@ abstract class AppModule {
                 addProduct = AddProduct(repository),
                 getAllProducts = GetAllProducts(repository),
                 getProduct = { id -> repository.getProductById(id)},
-                syncProducts = { repository.syncProducts() }
+                syncProducts = { repository.syncProducts() },
+                getProductAsFlow = repository::getProductAsFlow
             )
         }
 

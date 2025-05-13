@@ -19,12 +19,7 @@ class ProductsNavGraphViewModel @Inject constructor() : ViewModel() {
     }
 
     fun addViewedProduct(title: String) {
-        val currentList: List<String>? = _recentlyViewed.value
-        val current: List<String> = if (currentList != null) {
-            currentList
-        } else {
-            emptyList()
-        }
+        val current: List<String> = _recentlyViewed.value ?: emptyList()
 
         val updated = (listOf(title) + current).distinct().take(3)
         _recentlyViewed.value = updated
