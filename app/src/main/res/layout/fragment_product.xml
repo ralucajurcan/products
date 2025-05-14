@@ -82,6 +82,14 @@
             android:src="@drawable/floppy"
             android:contentDescription="Save"
             android:tint="@color/white" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/syncButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_create"
+            android:contentDescription="Sync"
+            android:tint="@color/white" />
     </LinearLayout>
 
 

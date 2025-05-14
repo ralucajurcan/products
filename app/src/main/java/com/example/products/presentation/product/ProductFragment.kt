@@ -21,6 +21,7 @@ import com.bumptech.glide.Glide
 import com.example.products.R
 import com.example.products.common.model.Product
 import com.example.products.databinding.FragmentProductBinding
+import com.example.products.framework.worker.SyncScheduler
 import com.example.products.presentation.shared.SharedViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -102,6 +103,11 @@ class ProductFragment : Fragment(R.layout.fragment_product) {
         binding.cancelButton.setOnClickListener {
             sharedViewModel.resetSelectedProductId()
             Navigation.findNavController(it).popBackStack()
+        }
+
+        binding.syncButton.setOnClickListener {
+            SyncScheduler.enqueueProductSync(requireContext())
+            Toast.makeText(requireContext(), "Manual sync started", Toast.LENGTH_SHORT).show()
         }
 
         observeUiState()
