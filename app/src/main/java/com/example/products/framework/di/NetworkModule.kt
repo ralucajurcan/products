@@ -2,6 +2,7 @@ package com.example.products.framework.di
 
 import com.example.products.BuildConfig
 import com.example.products.auth.JwtAuthInterceptor
+import com.example.products.framework.network.ConnectivityInterceptor
 import com.example.products.framework.remote.ApiService
 import dagger.Module
 import dagger.Provides
@@ -21,9 +22,11 @@ object NetworkModule {
     // builds the HTTP client; different interceptors can be plugged-in (logging, JWT etc)
     @Provides
     @Singleton
-    fun provideOkHttpClient(jwtAuthInterceptor: JwtAuthInterceptor): OkHttpClient {
+    fun provideOkHttpClient(jwtAuthInterceptor: JwtAuthInterceptor,
+                            connectivityInterceptor: ConnectivityInterceptor): OkHttpClient {
         return OkHttpClient.Builder()
             .addInterceptor(jwtAuthInterceptor)
+            .addInterceptor(connectivityInterceptor)
             .build()
     }
 
